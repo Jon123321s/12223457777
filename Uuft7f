@@ -1,0 +1,82 @@
+
+#include <iostream>
+#include <fstream>
+#include <map>
+#include <string>
+
+int main() {
+    std::map<std::string, std::string> dictionary;
+    std::ifstream file("slovar.txt");
+    std::string line;
+
+    // Считываем словарь из файла и добавляем его в map
+    while (std::getline(file, line)) {
+        size_t pos = line.find(':');
+        std::string engWord = line.substr(0, pos);
+        std::string rusWord = line.substr(pos + 1);
+
+        dictionary.insert(std::pair<std::string, std::string>(engWord, rusWord));
+    }
+
+    file.close();
+
+    std::cout << "Выберите действие:\n";
+    std::cout << "1. Ввод английского слова для перевода\n";
+    std::cout << "2. Ввод русского слова для перевода\n";
+    int choice;
+    std::cin >> choice;
+
+    if (choice == 1) {
+        std::string engWord;
+        std::cout << "Введите английское слово: ";
+        std::cin >> engWord;
+
+        // Проверяем наличие слова в словаре
+        auto search = dictionary.find(engWord);
+        if (search != dictionary.end()) {
+            std::cout << "Перевод: " << search->second << std::endl;
+        } else {
+            std::cout << "Слово не найдено в словаре" << std::endl;
+        }
+    } else if (choice == 2) {
+        std::string rusWord;
+        std::cout << "Введите русское слово: ";
+        std::cin >> rusWord;
+
+        // Проверяем наличие слова в словаре
+        for (auto const& pair : dictionary) {
+            if (pair.second == rusWord) {
+                std::cout << "Перевод: " << pair.first << std::endl;
+                return 0;
+            }
+        }
+        std::cout << "Слово не найдено в словаре" << std::endl;
+    } else {
+        std::cout << "Неправильный выбор" << std::endl;
+        return 1;
+    }
+
+    std::ofstream outputFile("slovar.txt", std::ios_base::app);
+    
+    // Записываем новое слово в файл, если его еще нет в словаре
+    if (outputFile.is_open()) {
+        std::string newWord;
+        std::string translation;
+        std::cout << "Введите новое английское слово и его перевод на русский: ";
+        std::cin >> newWord >> translation;
+
+        auto search = dictionary.find(newWord);
+        if (search != dictionary.end()) {
+            std::cout << "Слово уже существует в словаре" << std::endl;
+        } else {
+            outputFile << "\n" << newWord << ":" << translation;
+            std::cout << "Слово успешно добавлено в словарь" << std::endl;
+        }
+        outputFile.close();
+    } else {
+        std::cout << "Не удалось открыть файл" << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
